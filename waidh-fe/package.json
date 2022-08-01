@@ -4,6 +4,11 @@
   "description": "Typescript refactor of my first phaser game",
   "main": "index.js",
   "author": "Arix Phua",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
   "devDependencies": {
     "typescript": "^4.7.4",
     "vite": "^3.0.4"
