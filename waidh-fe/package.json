@@ -1,0 +1,14 @@
+{
+  "name": "waidh-fe",
+  "version": "1.0.0",
+  "description": "Typescript refactor of my first phaser game",
+  "main": "index.js",
+  "author": "Arix Phua",
+  "devDependencies": {
+    "typescript": "^4.7.4",
+    "vite": "^3.0.4"
+  },
+  "dependencies": {
+    "phaser": "^3.55.2"
+  }
+}
