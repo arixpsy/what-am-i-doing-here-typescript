@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import Loader from './scenes/Loader'
+import Login from './scenes/Login'
 
 const config: Phaser.Types.Core.GameConfig = {
 	width: 1000,
@@ -8,6 +10,7 @@ const config: Phaser.Types.Core.GameConfig = {
 	dom: {
 		createContainer: true,
 	},
+	scene: [Loader, Login],
 	physics: {
 		default: 'arcade',
 		arcade: {

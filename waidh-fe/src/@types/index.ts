@@ -1,10 +1,10 @@
-import { SceneKey, SpriteKey } from '../utils/key'
+import { MapKey, SceneKey, SpriteKey } from '../utils/key'
 
 export type PlayerInfo = {
 	uid: string
 	displayName: string
 	spriteType: SpriteKey
 	channel: number
-	map: SceneKey
+	map: MapKey
 	portal: number
 }
