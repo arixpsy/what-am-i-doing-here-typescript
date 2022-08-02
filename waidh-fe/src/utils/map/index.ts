@@ -35,7 +35,7 @@ export type MapDataShape = {
 			spawnOffset: number
 			to: {
 				scene: MapKey
-				map: MapDataShape
+				map: () => MapDataShape
 				portal: number
 			}
 		}

@@ -31,7 +31,7 @@ const ForestData: MapDataShape = {
 			spawnOffset: 7,
 			to: {
 				scene: MapKey.STREET,
-				map: StreetData,
+				map: () => StreetData,
 				portal: 1,
 			},
 		},
@@ -42,7 +42,7 @@ const ForestData: MapDataShape = {
 			to: {
 				// TODO: Change THIEF TOWN
 				scene: MapKey.STREET,
-				map: StreetData,
+				map: () => StreetData,
 				portal: 1,
 			},
 		},
