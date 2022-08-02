@@ -1,0 +1,38 @@
+<style>
+	.login-form-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		background-color: white;
+		height: 500px;
+		width: 300px;
+		padding: 2rem;
+		justify-content: center;
+	}
+	.login-form-container > h1 {
+		text-align: center;
+	}
+	#signUpBtn {
+		padding-top: 0.5rem;
+		font-size: 0.6rem;
+		font-weight: bold;
+		cursor: pointer;
+	}
+</style>
+<div class="login-form-container">
+	<h1 class="title is-2">What am I doing here</h1>
+	<h2 class="title is-5">Sign in</h2>
+	<div class="field">
+		<label class="label">Display Name</label>
+		<div class="control">
+			<input id="display-name-input" class="input" type="text" maxlength="20"/>
+		</div>
+		<label class="label">Sprite</label>
+		<div class="control">
+			<div class="select">
+				<select id="sprite-input"></select>
+			</div>
+		</div>
+	</div>
+	<button class="button is-info" id="instantLoginBtn">Enter</button>
+</div>
