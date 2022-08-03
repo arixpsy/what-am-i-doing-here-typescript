@@ -18,6 +18,9 @@ export enum BackgroundKey {
 export enum SoundKey {
 	LOGIN = 'LOGIN_AUDIO',
 	CAVA_BIEN = 'CAVA_BIEN_AUDIO',
+
+	JUMP = 'JUMP_AUDIO',
+	PORTAL = 'PORTAL_AUDIO',
 }
 
 export enum SettingKey {
