@@ -30,7 +30,7 @@ class Login extends Phaser.Scene {
 		}
 
 		this.loginForm.on('click', (event: Event) => {
-			if (!(event.target instanceof HTMLInputElement)) return
+			if (!(event.target instanceof HTMLButtonElement)) return
 
 			const displayNameInput = document.getElementById(
 				'display-name-input'
