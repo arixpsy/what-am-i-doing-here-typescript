@@ -22,8 +22,8 @@ export type MapDataShape = {
 				height: number
 				width: number
 			}
-			x: Array<number>
-			y: Array<number>
+			x: Array<number> | number
+			y: Array<number> | number
 			image: string
 			key: string
 		}>
