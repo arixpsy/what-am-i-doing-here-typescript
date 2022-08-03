@@ -24,7 +24,7 @@ export enum SoundKey {
 }
 
 export enum SettingKey {
-	SOUND_VOLUMNE = 'SOUND-VOLUME',
+	SOUND_VOLUME = 'SOUND-VOLUME',
 }
 
 export enum SpriteKey {

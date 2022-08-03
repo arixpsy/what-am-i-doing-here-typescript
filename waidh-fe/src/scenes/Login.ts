@@ -1,5 +1,11 @@
 import Phaser from 'phaser'
-import { BackgroundKey, MapKey, SceneKey, SpriteKey } from '../utils/key'
+import {
+	BackgroundKey,
+	MapKey,
+	SceneKey,
+	SoundKey,
+	SpriteKey,
+} from '../utils/key'
 import SpriteData from '../utils/sprite'
 import loginForm from './../assets/html/loginForm.html?raw'
 import { v4 as uuidv4 } from 'uuid'
@@ -7,6 +13,7 @@ import { PlayerInfo } from '../@types'
 
 class Login extends Phaser.Scene {
 	private loginForm?: Phaser.GameObjects.DOMElement
+	private bgm?: Phaser.Sound.BaseSound
 
 	constructor() {
 		super(SceneKey.LOGIN)
@@ -14,7 +21,10 @@ class Login extends Phaser.Scene {
 
 	create() {
 		this.add.image(500, 250, BackgroundKey.LOGIN_BACKGROUND)
-
+		this.bgm = this.sound.add(SoundKey.LOGIN, {
+			loop: true,
+		})
+		this.bgm.play()
 		this.add.rectangle(500, 250, 1000, 500, 0x000000, 0.3)
 		this.loginForm = this.add.dom(0, 0).createFromHTML(loginForm)
 		this.loginForm.setOrigin(0, 0)
@@ -47,6 +57,7 @@ class Login extends Phaser.Scene {
 				}
 				if (playerInfo.displayName) {
 					this.scene.start(playerInfo.map, playerInfo)
+					this.bgm?.stop()
 				} else {
 					alert('Enter a display name')
 				}
