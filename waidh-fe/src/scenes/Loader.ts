@@ -54,6 +54,27 @@ class Loader extends Phaser.Scene {
 		this.createProgressBar()
 	}
 
+	create() {
+		for (const sprite of Object.values(SpriteData)) {
+			if (sprite.idle) {
+				this.anims.create({
+					key: sprite.idle.key,
+					frames: this.anims.generateFrameNumbers(sprite.idle.key, {}),
+					frameRate: sprite.idle.framerate,
+					repeat: -1,
+				})
+			}
+			if (sprite.moving) {
+				this.anims.create({
+					key: sprite.moving.key,
+					frames: this.anims.generateFrameNumbers(sprite.moving.key, {}),
+					frameRate: sprite.moving.framerate,
+					repeat: -1,
+				})
+			}
+		}
+	}
+
 	createProgressBar() {
 		let Rectangle = Phaser.Geom.Rectangle
 		let main = this.cameras.main
