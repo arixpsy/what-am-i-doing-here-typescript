@@ -4,6 +4,7 @@
   "description": "Typescript refactor of my first phaser game",
   "main": "index.js",
   "author": "Arix Phua",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
