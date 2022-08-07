@@ -4,10 +4,10 @@ import 'dotenv/config'
 import http from 'http'
 import cors from 'cors'
 import socket from './socket'
-import { ENVIRONMENT } from './utils/constants'
+import { Environment } from './utils/constants'
 import { CORS_ORIGIN } from './config'
 
-const env = (process.env.ENV as ENVIRONMENT) || ENVIRONMENT.DEV
+const env = (process.env.ENV as Environment) || Environment.DEV
 const app: Express = express()
 const port = process.env.PORT || 3000
 

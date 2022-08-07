@@ -1,6 +1,6 @@
-import { ENVIRONMENT } from './utils/constants'
+import { Environment } from './utils/constants'
 
-export const CORS_ORIGIN: Record<ENVIRONMENT, Array<string>> = {
-	[ENVIRONMENT.DEV]: ["http://localhost:8080"],
-	[ENVIRONMENT.PROD]: [],
+export const CORS_ORIGIN: Record<Environment, Array<string>> = {
+	[Environment.DEV]: ["http://localhost:8080"],
+	[Environment.PROD]: [],
 }
