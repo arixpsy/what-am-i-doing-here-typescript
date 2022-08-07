@@ -2,6 +2,19 @@ import { MapKey, SoundKey } from './../key'
 import ForestData from './forest'
 import StreetData from './street'
 
+export type PortalData = {
+	[key: number]: {
+		x: number
+		y: number
+		spawnOffset: number
+		to: {
+			scene: MapKey
+			map: () => MapDataShape
+			portal: number
+		}
+	}
+}
+
 export type MapDataShape = {
 	dimensions: {
 		height: number
@@ -28,18 +41,7 @@ export type MapDataShape = {
 			key: string
 		}>
 	}
-	portals: {
-		[key: number]: {
-			x: number
-			y: number
-			spawnOffset: number
-			to: {
-				scene: MapKey
-				map: () => MapDataShape
-				portal: number
-			}
-		}
-	}
+	portals: PortalData
 	spawn: {
 		x: number
 		y: number

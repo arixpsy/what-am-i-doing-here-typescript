@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 import Loader from './scenes/Loader'
 import Login from './scenes/Login'
+import { Forest } from './scenes/AllMaps'
+import io from 'socket.io-client'
 
 const config: Phaser.Types.Core.GameConfig = {
 	width: 1000,
@@ -10,12 +12,12 @@ const config: Phaser.Types.Core.GameConfig = {
 	dom: {
 		createContainer: true,
 	},
-	scene: [Loader, Login],
+	scene: [Loader, Login, Forest],
 	physics: {
 		default: 'arcade',
 		arcade: {
 			debug: false,
-			gravity: { y: 700 },
+			gravity: { y: 750 },
 		},
 	},
 	scale: {
@@ -25,3 +27,9 @@ const config: Phaser.Types.Core.GameConfig = {
 }
 
 const game = new Phaser.Game(config)
+
+game.registry.set('socket', io('http://localhost:3000', {
+	withCredentials: true,
+	autoConnect: false,
+	transports: ['websocket'],
+}))

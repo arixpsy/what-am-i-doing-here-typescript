@@ -9,7 +9,10 @@ import {
 import SpriteData from '../utils/sprite'
 import loginForm from './../assets/html/loginForm.html?raw'
 import { v4 as uuidv4 } from 'uuid'
-import { PlayerInfo } from '../@types'
+import { LoginInfo, PlayerInfo } from '../@types'
+import io, { Socket } from 'socket.io-client'
+import { SocketEvent } from '../utils/socket'
+import { z } from 'zod'
 
 class Login extends Phaser.Scene {
 	private loginForm?: Phaser.GameObjects.DOMElement
@@ -20,11 +23,19 @@ class Login extends Phaser.Scene {
 	}
 
 	create() {
+		const io: Socket = this.registry.get('socket')
+
+		// Initialize Background
 		this.add.image(500, 250, BackgroundKey.LOGIN_BACKGROUND)
+
+		// Initialize Sound
+		this.sound.add(SoundKey.PORTAL)
 		this.bgm = this.sound.add(SoundKey.LOGIN, {
 			loop: true,
 		})
 		this.bgm.play()
+
+		// Initialize Login UI
 		this.add.rectangle(500, 250, 1000, 500, 0x000000, 0.3)
 		this.loginForm = this.add.dom(0, 0).createFromHTML(loginForm)
 		this.loginForm.setOrigin(0, 0)
@@ -33,6 +44,7 @@ class Login extends Phaser.Scene {
 		const spriteInput = document.getElementById(
 			'sprite-input'
 		) as HTMLSelectElement
+
 		for (const sprite of Object.values(SpriteData)) {
 			if (sprite.key !== SpriteKey.PORTAL) {
 				spriteInput.innerHTML += `<option value='${sprite.key}'>${sprite.key}</option>`
@@ -47,20 +59,43 @@ class Login extends Phaser.Scene {
 			) as HTMLInputElement
 
 			if (event.target.id == 'instantLoginBtn') {
-				const playerInfo: PlayerInfo = {
+				io.auth = <LoginInfo>{
 					uid: uuidv4(),
 					displayName: displayNameInput.value,
 					spriteType: spriteInput.value as SpriteKey,
-					channel: 1,
-					map: MapKey.FOREST as MapKey,
-					portal: 0,
 				}
-				if (playerInfo.displayName) {
-					this.scene.start(playerInfo.map, playerInfo)
-					this.bgm?.stop()
-				} else {
+
+				if (!io.auth.displayName) {
 					alert('Enter a display name')
+					return
 				}
+
+				io.connect()
+
+				io.on('connect_error', (err: any) => {
+					if (err instanceof z.ZodError) {
+						for (const issue of err.issues) {
+							const zodIssue = issue as z.ZodIssue
+							console.debug(
+								`${zodIssue.path[zodIssue.path.length - 1]}: ${
+									zodIssue.message
+								}`
+							)
+						}
+					} else {
+						console.debug(err)
+					}
+				})
+
+				io.on(SocketEvent.LOGIN_SUCCESS, (data: PlayerInfo) => {
+					document.getElementById('login-form-container')?.classList.add('fade')
+					this.cameras.main.fadeOut(750, 0, 0, 0)
+					this.cameras.main.once('camerafadeoutcomplete', () => {
+						this.scene.start(data.map)
+						this.bgm?.stop()
+						this.scene.stop()
+					})
+				})
 			}
 		})
 	}
