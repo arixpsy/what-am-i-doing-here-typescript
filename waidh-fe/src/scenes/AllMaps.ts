@@ -7,3 +7,9 @@ export class Forest extends Map {
 	}
 }
 
+export class Street extends Map {
+	constructor() {
+		super(MapKey.STREET)
+	}
+}
+
