@@ -1,6 +1,14 @@
 import { Server } from 'socket.io'
 import { MapKey } from './utils/constants'
-import { ILogin, IPlayerInfoWithXY, SocketEvent, ZLoginSchema } from './utils/socket'
+import {
+	ILogin,
+	IPlayerInfoWithXY,
+	SocketEvent,
+	ZLoginSchema,
+} from './utils/socket'
+import Storage from './storage'
+
+const gameStorage = new Storage()
 
 const socket = (io: Server) => {
 	io.use((socket, next) => {
@@ -28,14 +36,32 @@ const socket = (io: Server) => {
 
 		io.to(socket.id).emit(SocketEvent.LOGIN_SUCCESS, playerInfo)
 
-		socket.on(SocketEvent.JOIN_MAP, (_: any, callback: (res: IPlayerInfoWithXY) => void) => {
-			console.log('A user join map:' + playerInfo.uid)
-			callback(playerInfo)
-		})
+		socket.on(
+			SocketEvent.JOIN_MAP,
+			(_: any, callback: (res: IPlayerInfoWithXY) => void) => {
+				console.log('A user join map:' + playerInfo.uid)
+				const newPlayer = gameStorage.addPlayerToRoom(playerInfo)
+				socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_CONNECT, newPlayer)
+				callback(playerInfo)
+			}
+		)
 
 		socket.on(SocketEvent.DISCONNECT, function () {
 			console.log('A user disconnected: ' + playerInfo.uid)
+			const removedPlayer = gameStorage.removePlayer(playerInfo)
+			socket.broadcast
+				.to(roomId)
+				.emit(SocketEvent.PLAYER_DISCONNECT, removedPlayer)
 		})
+
+		socket.on(
+			SocketEvent.REQUEST_ALL_PLAYERS,
+			(_: any, callback: (res: Record<string, IPlayerInfoWithXY>) => void) => {
+				const { map, channel } = playerInfo
+				const allPlayers = gameStorage.getPlayersInRoom(map, channel)
+				callback(allPlayers)
+			}
+		)
 	})
 }
 

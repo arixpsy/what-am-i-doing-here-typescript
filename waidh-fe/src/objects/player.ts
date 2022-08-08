@@ -1,8 +1,8 @@
-import { Scene } from "phaser";
-import { PlayerInfoWithXY } from "../@types";
-import Map from "../scenes/Map";
-import MapData from "../utils/map";
-import SpriteData from "../utils/sprite";
+import { Scene } from 'phaser'
+import { PlayerInfoWithXY } from '../@types'
+import Map from '../scenes/Map'
+import MapData from '../utils/map'
+import SpriteData from '../utils/sprite'
 
 export enum SpriteState {
 	MOVING,
@@ -10,19 +10,19 @@ export enum SpriteState {
 }
 
 class Player {
-  private info: PlayerInfoWithXY
-  private container: Phaser.GameObjects.Container
-  private sprite: Phaser.GameObjects.Sprite
-  private state: SpriteState
+	private info: PlayerInfoWithXY
+	private container: Phaser.GameObjects.Container
+	private sprite: Phaser.GameObjects.Sprite
+	private state: SpriteState
 
-  constructor(player: PlayerInfoWithXY, scene: Map, isLocalPlayer:Boolean) {
-    this.state = SpriteState.STOP
-    this.info = player
+	constructor(player: PlayerInfoWithXY, scene: Map, isLocalPlayer: Boolean) {
+		this.state = SpriteState.STOP
+		this.info = player
 
-    const map = MapData[player.map]
+		const map = MapData[player.map]
 		const playerSpriteType = SpriteData[player.spriteType]
-    const sceneGround = scene.getGround()
-    const scenePlatforms = scene.getPlatforms()
+		const sceneGround = scene.getGround()
+		const scenePlatforms = scene.getPlatforms()
 
 		let spawnX = map.spawn.x
 		let spawnY = map.spawn.y
@@ -65,7 +65,10 @@ class Player {
 		if (isLocalPlayer) {
 			scene.registry.set('localPlayerUid', player.uid)
 			scene.physics.world.enable(this.container)
-			if (sceneGround && this.container.body instanceof Phaser.Physics.Arcade.Body) {
+			if (
+				sceneGround &&
+				this.container.body instanceof Phaser.Physics.Arcade.Body
+			) {
 				scene.physics.add.collider(this.container, sceneGround)
 				this.container.body.setCollideWorldBounds(true)
 			}
@@ -76,19 +79,19 @@ class Player {
 				}
 			}
 		}
-  }
+	}
 
-  getInfo() {
-    return this.info
-  }
+	getUid() {
+		return this.info.uid
+	}
 
-  getContainer() {
-    return this.container
-  }
+	getContainer() {
+		return this.container
+	}
 
-  getSprite() {
-    return this.sprite
-  }
+	getSprite() {
+		return this.sprite
+	}
 }
 
 export default Player

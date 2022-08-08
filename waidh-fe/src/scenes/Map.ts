@@ -12,10 +12,7 @@ import Player from '../objects/player'
 class Map extends Scene {
 	private map: MapKey
 	private localPlayer?: Player
-	private players: Record<
-		string,
-		Player
-	>
+	private players: Record<string, Player>
 	private ground?: Phaser.Physics.Arcade.StaticGroup
 	private platforms: Array<Phaser.Types.Physics.Arcade.ImageWithDynamicBody>
 	private portals: Array<{
@@ -50,7 +47,7 @@ class Map extends Scene {
 		// TODO: add player movement
 	}
 
-	// GETTERS 
+	// GETTERS
 	getGround() {
 		return this.ground
 	}
@@ -157,14 +154,33 @@ class Map extends Scene {
 			this.players[data.uid] = localPlayer
 			this.setupCamera(localPlayer)
 			this.localPlayer = localPlayer
+
+			io.emit(
+				SocketEvent.REQUEST_ALL_PLAYERS,
+				undefined,
+				(data: Record<string, PlayerInfoWithXY>) => {
+					for (const player of Object.values(data)) {
+						if (player.uid !== localPlayer.getUid()) {
+							this.players[player.uid] = new Player(player, this, false)
+						}
+					}
+				}
+			)
 		})
 
-		// TODO: onDisconnect
-		// TODO: emit getAllPLayers
-		// TODO: onOtherPlayerConnect
-		// TODO: onOtherPlayerDisconnect
+		io.on(SocketEvent.PLAYER_CONNECT, (player: PlayerInfoWithXY) => {
+			this.players[player.uid] = new Player(player, this, false)
+		})
+
+		io.on(SocketEvent.PLAYER_DISCONNECT, (player: PlayerInfoWithXY) => {
+			const { uid } = player
+			this.players[player.uid].getContainer().destroy()
+			delete this.players[player.uid]
+		})
+
 		// TODO: onPlayerMove
 		// TODO: onPlayerStop
+		// TODO: onDisconnect
 		// TODO: onPlayerMessage
 		// TODO: emitChangeMap
 		// TODO: emitSendMessage
@@ -190,9 +206,7 @@ class Map extends Scene {
 		this.cameras.main.startFollow(player.getContainer(), true)
 	}
 
-	update() {
-		
-	}
+	update() {}
 }
 
 export default Map
