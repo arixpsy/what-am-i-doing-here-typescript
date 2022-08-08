@@ -23,7 +23,14 @@ export const ZPlayerInfoSchema = ZLoginSchema.extend({
 	socketId: z.string(),
 	channel: z.number(),
 	map: z.nativeEnum(MapKey),
-	portal: z.number(),
+	portal: z.optional(z.number()),
 })
 
 export type IPlayerInfo = z.infer<typeof ZPlayerInfoSchema>
+
+export const ZPlayerInfoWithXYSchema = ZPlayerInfoSchema.extend({
+	x: z.optional(z.number()),
+	y: z.optional(z.number()),
+})
+
+export type IPlayerInfoWithXY = z.infer<typeof ZPlayerInfoWithXYSchema>
