@@ -13,7 +13,12 @@ export type PlayerInfo = {
 	spriteType: SpriteKey
 	channel: number
 	map: MapKey
-	portal: number
+	portal?: number
+}
+
+export type PlayerInfoWithXY = PlayerInfo & {
+	x?: number,
+	y?: number
 }
 
 // export type SocketPlayerConnectedMessageBody = {
