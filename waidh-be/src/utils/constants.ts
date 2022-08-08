@@ -11,3 +11,5 @@ export enum MapKey {
   FOREST = 'FOREST',
 	STREET = 'STREET',
 }
+
+export const NUMBER_OF_CHANNELS = 12
