@@ -47,8 +47,7 @@ const ForestData: MapDataShape = {
 			},
 		},
 	},
-	//TODO: Change sound
-	sound: SoundKey.LOGIN,
+	sound: SoundKey.MY_PRINCE_MY_KINGDOM,
 	key: MapKey.FOREST,
 }
 
