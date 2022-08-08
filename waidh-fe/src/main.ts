@@ -16,7 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
 	physics: {
 		default: 'arcade',
 		arcade: {
-			debug: false,
+			debug: true,
 			gravity: { y: 750 },
 		},
 	},
@@ -28,8 +28,12 @@ const config: Phaser.Types.Core.GameConfig = {
 
 const game = new Phaser.Game(config)
 
-game.registry.set('socket', io('http://localhost:3000', {
-	withCredentials: true,
-	autoConnect: false,
-	transports: ['websocket'],
-}))
+game.registry.set(
+	'socket',
+	io('http://localhost:3000', {
+		withCredentials: true,
+		autoConnect: false,
+		transports: ['websocket'],
+	})
+)
+
