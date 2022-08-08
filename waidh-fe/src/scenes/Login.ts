@@ -13,6 +13,9 @@ import { LoginInfo, PlayerInfo } from '../@types'
 import io, { Socket } from 'socket.io-client'
 import { SocketEvent } from '../utils/socket'
 import { z } from 'zod'
+import Cookies from 'js-cookie'
+import { SettingKey } from '../utils/key'
+import { initVolume } from '../utils/functions/volume'
 
 class Login extends Phaser.Scene {
 	private loginForm?: Phaser.GameObjects.DOMElement
@@ -24,15 +27,14 @@ class Login extends Phaser.Scene {
 
 	create() {
 		const io: Socket = this.registry.get('socket')
-
+		const soundManager = this.sound as Phaser.Sound.HTML5AudioSoundManager
+		
 		// Initialize Background
 		this.add.image(500, 250, BackgroundKey.LOGIN_BACKGROUND)
 
 		// Initialize Sound
-		this.sound.add(SoundKey.PORTAL)
-		this.bgm = this.sound.add(SoundKey.LOGIN, {
-			loop: true,
-		})
+		initVolume(soundManager)
+		this.bgm = soundManager.add(SoundKey.LOGIN, { loop: true})
 		this.bgm.play()
 
 		// Initialize Login UI
