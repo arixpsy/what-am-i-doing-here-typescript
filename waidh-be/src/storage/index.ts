@@ -21,23 +21,31 @@ class Storage {
 		return playersInRoom
 	}
 
-	addPlayerToRoom(playerInfo: IPlayerInfoWithXY): IPlayerInfoWithXY{
-    const { map, channel } = playerInfo
+	addPlayerToRoom(playerInfo: IPlayerInfoWithXY): IPlayerInfoWithXY {
+		const { map, channel } = playerInfo
 		const roomId = getRoomId(map, channel)
 		const playersInRoom = this.getPlayersInRoom(map, channel)
 		playersInRoom[playerInfo.uid] = playerInfo
 		this.players[roomId] = playersInRoom
-    return playerInfo
+		return playerInfo
 	}
 
 	removePlayer(playerInfo: IPlayerInfoWithXY): IPlayerInfoWithXY {
-    const { map, channel, uid } = playerInfo
+		const { map, channel, uid } = playerInfo
 		const roomId = getRoomId(map, channel)
-    const playersInRoom = this.getPlayersInRoom(map, channel)
+		const playersInRoom = this.getPlayersInRoom(map, channel)
 		const removePlayer = { ...playersInRoom[uid] }
 		delete playersInRoom[uid]
 		this.players[roomId] = playersInRoom
 		return removePlayer
+	}
+
+	updatePlayerLocation(playerInfo: IPlayerInfoWithXY) {
+		const { map, channel, uid, x, y } = playerInfo
+		const roomId = getRoomId(map, channel)
+		const playersInRoom = this.getPlayersInRoom(map, channel)
+		playersInRoom[uid].x = x
+		playersInRoom[uid].y = y
 	}
 }
 

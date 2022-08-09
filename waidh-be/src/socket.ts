@@ -62,6 +62,20 @@ const socket = (io: Server) => {
 				callback(allPlayers)
 			}
 		)
+
+		socket.on(SocketEvent.CLIENT_MOVEMENT, ({ x, y }: Pick<IPlayerInfoWithXY, 'uid' | 'x' | 'y'>) => {
+			playerInfo.x = x
+			playerInfo.y = y
+			gameStorage.updatePlayerLocation(playerInfo)
+			socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_MOVE, playerInfo);
+		})
+
+		socket.on(SocketEvent.CLIENT_MOVEMENT_STOP, ({ x, y }: Pick<IPlayerInfoWithXY, 'uid' | 'x' | 'y'>) => {
+			playerInfo.x = x
+			playerInfo.y = y
+			gameStorage.updatePlayerLocation(playerInfo)
+			socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_STOP, playerInfo);
+		})
 	})
 }
 
