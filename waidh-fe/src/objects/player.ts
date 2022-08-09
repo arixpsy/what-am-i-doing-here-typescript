@@ -1,22 +1,19 @@
-import { Scene } from 'phaser'
 import { PlayerInfoWithXY } from '../@types'
 import Map from '../scenes/Map'
 import MapData from '../utils/map'
 import SpriteData from '../utils/sprite'
 
-export enum SpriteState {
-	MOVING,
-	STOP,
-}
-
 class Player {
 	private info: PlayerInfoWithXY
 	private container: Phaser.GameObjects.Container
 	private sprite: Phaser.GameObjects.Sprite
-	private state: SpriteState
+	private prevX?: number
+	private prevY?: number
+
+	private isMovingLeft: boolean = false
+	private isMovingRight: boolean = false
 
 	constructor(player: PlayerInfoWithXY, scene: Map, isLocalPlayer: Boolean) {
-		this.state = SpriteState.STOP
 		this.info = player
 
 		const map = MapData[player.map]
@@ -85,12 +82,69 @@ class Player {
 		return this.info.uid
 	}
 
+	getSpriteType() {
+		return this.info.spriteType
+	}
+
 	getContainer() {
 		return this.container
 	}
 
 	getSprite() {
 		return this.sprite
+	}
+
+	getPlayerState() {
+		return {
+			x: this.info.x,
+			y: this.info.y,
+			isMovingLeft: this.isMovingLeft,
+			isMovingRight: this.isMovingRight,
+			isMoving: this.isMoving(),
+		}
+	}
+
+	getXY() {
+		return { x: this.info.x, y: this.info.y }
+	}
+
+	getPrevXY() {
+		return { x: this.prevX, y: this.prevY }
+	}
+
+	setX(x: number) {
+		this.prevX = this.info.x
+		this.info.x = x
+	}
+
+	setY(y: number) {
+		this.prevY = this.info.y
+		this.info.y = y
+	}
+
+	setXY(x: number, y: number) {
+		this.setX(x)
+		this.setY(y)
+	}
+
+	moveLeft() {
+		this.isMovingLeft = true
+	}
+
+	moveRight() {
+		this.isMovingRight = true
+	}
+
+	stopLeft() {
+		this.isMovingLeft = false
+	}
+
+	stopRight() {
+		this.isMovingRight = false
+	}
+
+	isMoving() {
+		return this.isMovingRight || this.isMovingLeft
 	}
 }
 

@@ -20,6 +20,7 @@ class Map extends Scene {
 		sprite: Phaser.GameObjects.Sprite
 	}>
 	private bgm?: Phaser.Sound.BaseSound
+
 	private keyLeft?: Phaser.Input.Keyboard.Key
 	private keyRight?: Phaser.Input.Keyboard.Key
 	private keySpace?: Phaser.Input.Keyboard.Key
@@ -122,28 +123,31 @@ class Map extends Scene {
 	}
 
 	addKeyboard() {
+		const soundManager = this.sound as Phaser.Sound.HTML5AudioSoundManager
+
 		this.keyLeft = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.LEFT
 		)
 		this.keyRight = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.RIGHT
 		)
+		this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
 		this.keySpace = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.SPACE
 		)
-		// this.keySpace.on('down', (event) => {
-		// 	this.player.jump()
-		// })
-		// this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
-		// this.keyUp.on('down', (event) => {
-		// 	const newLocalPlayerInfo = this.player.portal()
-		// 	if (newLocalPlayerInfo) {
-		// 		this.player.disconnect()
-		// 		this.bgm.stop()
-		// 		this.input.keyboard.removeAllKeys(true)
-		// 		this.scene.start(newLocalPlayerInfo.map, newLocalPlayerInfo)
-		// 	}
-		// })
+
+		this.keySpace.on('down', () => this.jumpLocalPlayer())
+
+		this.keyUp.on('down', () => {
+			soundManager.play(SoundKey.PORTAL)
+			// 	const newLocalPlayerInfo = this.player.portal()
+			// 	if (newLocalPlayerInfo) {
+			// 		this.player.disconnect()
+			// 		this.bgm.stop()
+			// 		this.input.keyboard.removeAllKeys(true)
+			// 		this.scene.start(newLocalPlayerInfo.map, newLocalPlayerInfo)
+			// 	}
+		})
 	}
 
 	setupSocket() {
@@ -178,9 +182,42 @@ class Map extends Scene {
 			delete this.players[player.uid]
 		})
 
-		// TODO: onPlayerMove
-		// TODO: onPlayerStop
-		// TODO: onDisconnect
+		io.on(SocketEvent.PLAYER_MOVE, (playerMovement: PlayerInfoWithXY) => {
+			if (!playerMovement.x || !playerMovement.y) return
+			const player = this.players[playerMovement.uid]
+			const sprite = player.getSprite()
+			const spriteInfo = SpriteData[player.getSpriteType()]
+			const { x: prevX } = player.getXY()
+
+			if (prevX) {
+				if (prevX < playerMovement.x) {
+					sprite.flipX = true
+				} else if (prevX > playerMovement.x) {
+					sprite.flipX = false
+				}
+
+				if (spriteInfo.moving) {
+					sprite.play(spriteInfo.moving.key, true)
+				}
+			}
+
+			player.getContainer().setX(playerMovement.x)
+			player.getContainer().setY(playerMovement.y)
+			player.setXY(playerMovement.x, playerMovement.y)
+		})
+
+		io.on(SocketEvent.PLAYER_STOP, (playerMovement: PlayerInfoWithXY) => {
+			if (!playerMovement.x || !playerMovement.y) return
+			const player = this.players[playerMovement.uid]
+			const sprite = player.getSprite()
+			const spriteInfo = SpriteData[player.getSpriteType()]
+
+			sprite.play(spriteInfo.idle.key, true)
+			player.getContainer().setX(playerMovement.x)
+			player.getContainer().setY(playerMovement.y)
+			player.setXY(playerMovement.x, playerMovement.y)
+		})
+
 		// TODO: onPlayerMessage
 		// TODO: emitChangeMap
 		// TODO: emitSendMessage
@@ -206,7 +243,109 @@ class Map extends Scene {
 		this.cameras.main.startFollow(player.getContainer(), true)
 	}
 
-	update() {}
+	moveLocalPlayer() {
+		if (!this.localPlayer) return
+		const { isMovingRight, isMovingLeft } = this.localPlayer.getPlayerState()
+		if (isMovingRight && isMovingLeft) {
+			this.stopLocalPlayer()
+			return
+		}
+
+		const sprite = this.localPlayer.getSprite()
+		const spriteInfo = SpriteData[this.localPlayer.getSpriteType()]
+		const container = this.localPlayer.getContainer()
+		const containerBody = container.body as Phaser.Physics.Arcade.Body
+
+		if (isMovingLeft) {
+			sprite.flipX = false
+			containerBody.setVelocityX(-150)
+		} else if (isMovingRight) {
+			sprite.flipX = true
+			containerBody.setVelocityX(150)
+		}
+
+		if (!spriteInfo.moving) return
+
+		sprite.play(spriteInfo.moving?.key, true)
+		this.localPlayer.setX(container.x)
+	}
+
+	stopLocalPlayer() {
+		if (!this.localPlayer) return
+		const io: Socket = this.registry.get('socket')
+		const sprite = this.localPlayer.getSprite()
+		const spriteInfo = SpriteData[this.localPlayer.getSpriteType()]
+		const container = this.localPlayer.getContainer()
+		const containerBody = container.body as Phaser.Physics.Arcade.Body
+
+		containerBody.setVelocityX(0)
+		sprite.play(spriteInfo.idle.key, true)
+		this.localPlayer.setX(container.x)
+
+		io.emit(SocketEvent.CLIENT_MOVEMENT_STOP, this.localPlayer.getXY())
+	}
+
+	jumpLocalPlayer() {
+		if (!this.localPlayer) return
+		const soundManager = this.sound as Phaser.Sound.HTML5AudioSoundManager
+		const container = this.localPlayer.getContainer()
+		const containerBody = container.body as Phaser.Physics.Arcade.Body
+
+		if (containerBody.touching.down) {
+			containerBody.setVelocityY(-275)
+			soundManager.play(SoundKey.JUMP)
+		}
+	}
+
+	fallLocalPlayer() {
+		if (!this.localPlayer) return
+		const container = this.localPlayer.getContainer()
+		this.localPlayer.setY(container.y)
+	}
+
+	sendMovement() {
+		if (!this.localPlayer) return
+		const io: Socket = this.registry.get('socket')
+		io.emit(SocketEvent.CLIENT_MOVEMENT, this.localPlayer.getXY())
+	}
+
+	update() {
+		if (this.localPlayer) {
+			const { x: prevX, y: prevY } = this.localPlayer.getPrevXY()
+
+			if (this.keyLeft && this.keyRight) {
+				if (this.keyLeft.isDown) {
+					this.localPlayer.moveLeft()
+				}
+
+				if (this.keyLeft.isUp) {
+					this.localPlayer.stopLeft()
+				}
+
+				if (this.keyRight.isDown) {
+					this.localPlayer.moveRight()
+				}
+
+				if (this.keyRight.isUp) {
+					this.localPlayer.stopRight()
+				}
+			}
+			const { isMoving } = this.localPlayer.getPlayerState()
+
+			if (isMoving) {
+				this.moveLocalPlayer()
+			} else {
+				this.stopLocalPlayer()
+			}
+
+			this.fallLocalPlayer()
+
+			const { x, y } = this.localPlayer.getXY()
+			if (x !== prevX || y !== prevY) {
+				this.sendMovement()
+			}
+		}
+	}
 }
 
 export default Map
