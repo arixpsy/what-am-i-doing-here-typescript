@@ -25,6 +25,7 @@ class Map extends Scene {
 	private keyRight?: Phaser.Input.Keyboard.Key
 	private keySpace?: Phaser.Input.Keyboard.Key
 	private keyUp?: Phaser.Input.Keyboard.Key
+	private isPortalLoading: boolean = false
 
 	constructor(key: MapKey) {
 		super(key)
@@ -45,7 +46,6 @@ class Map extends Scene {
 		// TODO: addsocialui
 		// TODO: add chat ui
 		// TODO: add message function
-		// TODO: add player movement
 	}
 
 	// GETTERS
@@ -123,8 +123,6 @@ class Map extends Scene {
 	}
 
 	addKeyboard() {
-		const soundManager = this.sound as Phaser.Sound.HTML5AudioSoundManager
-
 		this.keyLeft = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.LEFT
 		)
@@ -139,14 +137,25 @@ class Map extends Scene {
 		this.keySpace.on('down', () => this.jumpLocalPlayer())
 
 		this.keyUp.on('down', () => {
-			soundManager.play(SoundKey.PORTAL)
-			// 	const newLocalPlayerInfo = this.player.portal()
-			// 	if (newLocalPlayerInfo) {
-			// 		this.player.disconnect()
-			// 		this.bgm.stop()
-			// 		this.input.keyboard.removeAllKeys(true)
-			// 		this.scene.start(newLocalPlayerInfo.map, newLocalPlayerInfo)
-			// 	}
+			if (!this.localPlayer) return
+			const container = this.localPlayer.getContainer()
+			const containerBody = container.body as Phaser.Physics.Arcade.Body
+			const { x, y } = containerBody
+			for (const portal of this.portals) {
+				const { width: portalWidth } = SpriteData.PORTAL_SPRITE.dimensions
+				const portalLeftBound = portal.sprite.x - portalWidth / 2
+				const portalRightBound = portal.sprite.x + portalWidth / 2
+
+				if (
+					containerBody.touching.down &&
+					x > portalLeftBound &&
+					x < portalRightBound
+				) {
+					this.isPortalLoading = true
+					this.changeMap(portal.data)
+					return
+				}
+			}
 		})
 	}
 
@@ -178,8 +187,8 @@ class Map extends Scene {
 
 		io.on(SocketEvent.PLAYER_DISCONNECT, (player: PlayerInfoWithXY) => {
 			const { uid } = player
-			this.players[player.uid].getContainer().destroy()
-			delete this.players[player.uid]
+			this.players[uid].getContainer().destroy()
+			delete this.players[uid]
 		})
 
 		io.on(SocketEvent.PLAYER_MOVE, (playerMovement: PlayerInfoWithXY) => {
@@ -281,8 +290,9 @@ class Map extends Scene {
 		containerBody.setVelocityX(0)
 		sprite.play(spriteInfo.idle.key, true)
 		this.localPlayer.setX(container.x)
-
-		io.emit(SocketEvent.CLIENT_MOVEMENT_STOP, this.localPlayer.getXY())
+		if (this.localPlayer.getPrevXY().x !== container.x) {
+			io.emit(SocketEvent.CLIENT_MOVEMENT_STOP, this.localPlayer.getXY())
+		}
 	}
 
 	jumpLocalPlayer() {
@@ -309,7 +319,27 @@ class Map extends Scene {
 		io.emit(SocketEvent.CLIENT_MOVEMENT, this.localPlayer.getXY())
 	}
 
+	changeMap(portalData: PortalData) {
+		const { mapKey, portal } = portalData.to
+		if (!this.localPlayer) return
+		const io: Socket = this.registry.get('socket')
+		const soundManager = this.sound as Phaser.Sound.HTML5AudioSoundManager
+
+		io.emit(SocketEvent.CHANGE_MAP, { map: mapKey, portal }, () => {
+			soundManager.play(SoundKey.PORTAL)
+			this.cameras.main.fadeOut(750, 0, 0, 0)
+			this.cameras.main.once('camerafadeoutcomplete', () => {
+				this.scene.add(mapKey, MapData[mapKey].class)
+				this.scene.start(mapKey)
+				this.bgm?.stop()
+				this.input.keyboard.removeAllKeys(true)
+				this.scene.remove()
+			})
+		})
+	}
+
 	update() {
+		if (this.isPortalLoading) return
 		if (this.localPlayer) {
 			const { x: prevX, y: prevY } = this.localPlayer.getPrevXY()
 
@@ -330,6 +360,7 @@ class Map extends Scene {
 					this.localPlayer.stopRight()
 				}
 			}
+
 			const { isMoving } = this.localPlayer.getPlayerState()
 
 			if (isMoving) {

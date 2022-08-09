@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import Loader from './scenes/Loader'
 import Login from './scenes/Login'
-import { Forest, Street } from './scenes/AllMaps'
+import { Forest } from './scenes/AllMaps'
 import io from 'socket.io-client'
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -12,7 +12,7 @@ const config: Phaser.Types.Core.GameConfig = {
 	dom: {
 		createContainer: true,
 	},
-	scene: [Loader, Login, Forest, Street],
+	scene: [Loader, Login, Forest],
 	physics: {
 		default: 'arcade',
 		arcade: {
@@ -36,4 +36,3 @@ game.registry.set(
 		transports: ['websocket'],
 	})
 )
-
