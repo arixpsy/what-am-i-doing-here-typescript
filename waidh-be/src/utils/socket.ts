@@ -10,6 +10,7 @@ export enum SocketEvent {
 	REQUEST_ALL_PLAYERS = 'request_all_players',
 	CLIENT_MOVEMENT = 'client_movement',
 	CLIENT_MOVEMENT_STOP = 'client_movement_stop',
+	CHANGE_MAP = 'change_map',
 
 	// TO CLIENT
 	PLAYER_CONNECT = 'player_connect',
