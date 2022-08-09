@@ -1,4 +1,3 @@
-import { SpriteState } from '../objects/player'
 import { MapKey, SceneKey, SpriteKey } from '../utils/key'
 
 export type LoginInfo = {
