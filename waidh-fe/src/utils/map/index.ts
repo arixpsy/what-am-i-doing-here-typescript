@@ -1,3 +1,4 @@
+import { Scene } from 'phaser'
 import { MapKey, SoundKey } from './../key'
 import ForestData from './forest'
 import StreetData from './street'
@@ -46,6 +47,7 @@ export type MapDataShape = {
 	}
 	sound: SoundKey
 	key: MapKey
+	class: Class
 }
 
 const MapData: Record<MapKey, MapDataShape> = {

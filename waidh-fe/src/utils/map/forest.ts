@@ -1,4 +1,5 @@
 import { MapDataShape } from '.'
+import { Forest } from '../../scenes/AllMaps'
 import { MapKey, SoundKey } from '../key'
 import ForestBG from './../../assets/backgrounds/forest.png'
 import ForestPlatform from './../../assets/platforms/1024x110.png'
@@ -49,6 +50,7 @@ const ForestData: MapDataShape = {
 	},
 	sound: SoundKey.MY_PRINCE_MY_KINGDOM,
 	key: MapKey.FOREST,
+	class: Forest
 }
 
 export default ForestData

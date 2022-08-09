@@ -3,6 +3,7 @@ import { MapKey, SoundKey } from '../key'
 import ForestData from './forest'
 import StreetBG from './../../assets/backgrounds/street.gif'
 import StreetPlatform from './../../assets/platforms/1234x184.png'
+import { Street } from '../../scenes/AllMaps'
 
 const StreetData: MapDataShape = {
 	dimensions: {
@@ -38,6 +39,7 @@ const StreetData: MapDataShape = {
 	},
 	sound: SoundKey.CAVA_BIEN,
 	key: MapKey.STREET,
+	class: Street
 }
 
 export default StreetData
