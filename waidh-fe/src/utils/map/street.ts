@@ -30,7 +30,7 @@ const StreetData: MapDataShape = {
 			y: 550,
 			spawnOffset: 7,
 			to: {
-				scene: MapKey.FOREST,
+				mapKey: MapKey.FOREST,
 				map: () => ForestData,
 				portal: 1,
 			},

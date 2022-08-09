@@ -3,15 +3,13 @@ import ForestData from './forest'
 import StreetData from './street'
 
 export type PortalData = {
-	[key: number]: {
-		x: number
-		y: number
-		spawnOffset: number
-		to: {
-			scene: MapKey
-			map: () => MapDataShape
-			portal: number
-		}
+	x: number
+	y: number
+	spawnOffset: number
+	to: {
+		mapKey: MapKey
+		map: () => MapDataShape
+		portal: number
 	}
 }
 
@@ -41,7 +39,7 @@ export type MapDataShape = {
 			key: string
 		}>
 	}
-	portals: PortalData
+	portals: Record<number, PortalData>
 	spawn: {
 		x: number
 		y: number
