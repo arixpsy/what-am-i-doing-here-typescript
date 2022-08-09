@@ -25,9 +25,9 @@ class Storage {
 		const { map, channel } = playerInfo
 		const roomId = getRoomId(map, channel)
 		const playersInRoom = this.getPlayersInRoom(map, channel)
-		playersInRoom[playerInfo.uid] = playerInfo
+		playersInRoom[playerInfo.uid] = { ...playerInfo }
 		this.players[roomId] = playersInRoom
-		return playerInfo
+		return { ...playerInfo }
 	}
 
 	removePlayer(playerInfo: IPlayerInfoWithXY): IPlayerInfoWithXY {
@@ -42,7 +42,6 @@ class Storage {
 
 	updatePlayerLocation(playerInfo: IPlayerInfoWithXY) {
 		const { map, channel, uid, x, y } = playerInfo
-		const roomId = getRoomId(map, channel)
 		const playersInRoom = this.getPlayersInRoom(map, channel)
 		playersInRoom[uid].x = x
 		playersInRoom[uid].y = y
