@@ -7,6 +7,7 @@ import {
 	ZLoginSchema,
 } from './utils/socket'
 import Storage from './storage'
+import { getRoomId } from './utils/functions/storage'
 
 const gameStorage = new Storage()
 
@@ -31,15 +32,17 @@ const socket = (io: Server) => {
 		const roomId = `${playerInfo.map}-${playerInfo.channel}`
 		socket.join(roomId)
 
-		console.log('A user connected: ' + playerInfo.uid)
-		console.log('A user join room: ' + roomId)
+		console.log(`🟢 A user connected: ${playerInfo.displayName}`)
+		console.log(`🟢 A user join room: ${roomId}`)
 
 		io.to(socket.id).emit(SocketEvent.LOGIN_SUCCESS, playerInfo)
 
 		socket.on(
 			SocketEvent.JOIN_MAP,
 			(_: any, callback: (res: IPlayerInfoWithXY) => void) => {
-				console.log('A user join map:' + playerInfo.uid)
+				console.log(
+					`🟢 A user join map(${playerInfo.map}): ${playerInfo.displayName}`
+				)
 				const newPlayer = gameStorage.addPlayerToRoom(playerInfo)
 				socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_CONNECT, newPlayer)
 				callback(playerInfo)
@@ -47,7 +50,7 @@ const socket = (io: Server) => {
 		)
 
 		socket.on(SocketEvent.DISCONNECT, function () {
-			console.log('A user disconnected: ' + playerInfo.uid)
+			console.log(`⛔ A user disconnected: ${playerInfo.displayName}`)
 			const removedPlayer = gameStorage.removePlayer(playerInfo)
 			socket.broadcast
 				.to(roomId)
@@ -63,19 +66,51 @@ const socket = (io: Server) => {
 			}
 		)
 
-		socket.on(SocketEvent.CLIENT_MOVEMENT, ({ x, y }: Pick<IPlayerInfoWithXY, 'uid' | 'x' | 'y'>) => {
-			playerInfo.x = x
-			playerInfo.y = y
-			gameStorage.updatePlayerLocation(playerInfo)
-			socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_MOVE, playerInfo);
-		})
+		socket.on(
+			SocketEvent.CLIENT_MOVEMENT,
+			({ x, y }: Pick<IPlayerInfoWithXY, 'uid' | 'x' | 'y'>) => {
+				playerInfo.x = x
+				playerInfo.y = y
+				gameStorage.updatePlayerLocation(playerInfo)
+				socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_MOVE, playerInfo)
+			}
+		)
 
-		socket.on(SocketEvent.CLIENT_MOVEMENT_STOP, ({ x, y }: Pick<IPlayerInfoWithXY, 'uid' | 'x' | 'y'>) => {
-			playerInfo.x = x
-			playerInfo.y = y
-			gameStorage.updatePlayerLocation(playerInfo)
-			socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_STOP, playerInfo);
-		})
+		socket.on(
+			SocketEvent.CLIENT_MOVEMENT_STOP,
+			({ x, y }: Pick<IPlayerInfoWithXY, 'uid' | 'x' | 'y'>) => {
+				playerInfo.x = x
+				playerInfo.y = y
+				gameStorage.updatePlayerLocation(playerInfo)
+				socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_STOP, playerInfo)
+			}
+		)
+
+		socket.on(
+			SocketEvent.CHANGE_MAP,
+			(
+				{ map, portal }: Pick<IPlayerInfoWithXY, 'map' | 'portal'>,
+				callback: Function
+			) => {
+				const currentRoomId = getRoomId(playerInfo.map, playerInfo.channel)
+				const oldPlayerData = gameStorage.removePlayer(playerInfo)
+
+				playerInfo.map = map
+				playerInfo.portal = portal
+				delete playerInfo.x
+				delete playerInfo.y
+				const newRoomId = getRoomId(playerInfo.map, playerInfo.channel)
+
+				socket.broadcast
+					.to(currentRoomId)
+					.emit(SocketEvent.PLAYER_DISCONNECT, oldPlayerData)
+				socket.leave(currentRoomId)
+				console.log(`🟡 A user leave room: ${currentRoomId}`)
+				socket.join(newRoomId)
+				console.log(`🟢 A user join room: ${newRoomId}`)
+				callback()
+			}
+		)
 	})
 }
 

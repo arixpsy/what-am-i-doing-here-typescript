@@ -126,16 +126,17 @@ class Map extends Scene {
 		this.keyLeft = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.LEFT
 		)
+
 		this.keyRight = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.RIGHT
 		)
-		this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
+
 		this.keySpace = this.input.keyboard.addKey(
 			Phaser.Input.Keyboard.KeyCodes.SPACE
 		)
-
 		this.keySpace.on('down', () => this.jumpLocalPlayer())
 
+		this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
 		this.keyUp.on('down', () => {
 			if (!this.localPlayer) return
 			const container = this.localPlayer.getContainer()
@@ -152,6 +153,7 @@ class Map extends Scene {
 					x < portalRightBound
 				) {
 					this.isPortalLoading = true
+					this.stopLocalPlayer()
 					this.changeMap(portal.data)
 					return
 				}
@@ -196,7 +198,7 @@ class Map extends Scene {
 			const player = this.players[playerMovement.uid]
 			const sprite = player.getSprite()
 			const spriteInfo = SpriteData[player.getSpriteType()]
-			const { x: prevX } = player.getXY()
+			const { x: prevX } = player.getPrevXY()
 
 			if (prevX) {
 				if (prevX < playerMovement.x) {
@@ -228,7 +230,6 @@ class Map extends Scene {
 		})
 
 		// TODO: onPlayerMessage
-		// TODO: emitChangeMap
 		// TODO: emitSendMessage
 		// TODO: emitGetChannelStatus
 		// TODO: emitChangeChannel
@@ -255,11 +256,6 @@ class Map extends Scene {
 	moveLocalPlayer() {
 		if (!this.localPlayer) return
 		const { isMovingRight, isMovingLeft } = this.localPlayer.getPlayerState()
-		if (isMovingRight && isMovingLeft) {
-			this.stopLocalPlayer()
-			return
-		}
-
 		const sprite = this.localPlayer.getSprite()
 		const spriteInfo = SpriteData[this.localPlayer.getSpriteType()]
 		const container = this.localPlayer.getContainer()
@@ -274,14 +270,12 @@ class Map extends Scene {
 		}
 
 		if (!spriteInfo.moving) return
-
 		sprite.play(spriteInfo.moving?.key, true)
-		this.localPlayer.setX(container.x)
+		this.localPlayer.setXY(container.x, container.y)
 	}
 
 	stopLocalPlayer() {
 		if (!this.localPlayer) return
-		const io: Socket = this.registry.get('socket')
 		const sprite = this.localPlayer.getSprite()
 		const spriteInfo = SpriteData[this.localPlayer.getSpriteType()]
 		const container = this.localPlayer.getContainer()
@@ -289,10 +283,7 @@ class Map extends Scene {
 
 		containerBody.setVelocityX(0)
 		sprite.play(spriteInfo.idle.key, true)
-		this.localPlayer.setX(container.x)
-		if (this.localPlayer.getPrevXY().x !== container.x) {
-			io.emit(SocketEvent.CLIENT_MOVEMENT_STOP, this.localPlayer.getXY())
-		}
+		this.localPlayer.setXY(container.x, container.y)
 	}
 
 	jumpLocalPlayer() {
@@ -307,16 +298,16 @@ class Map extends Scene {
 		}
 	}
 
-	fallLocalPlayer() {
-		if (!this.localPlayer) return
-		const container = this.localPlayer.getContainer()
-		this.localPlayer.setY(container.y)
-	}
-
 	sendMovement() {
 		if (!this.localPlayer) return
 		const io: Socket = this.registry.get('socket')
 		io.emit(SocketEvent.CLIENT_MOVEMENT, this.localPlayer.getXY())
+	}
+
+	sendStop() {
+		if (!this.localPlayer) return
+		const io: Socket = this.registry.get('socket')
+		io.emit(SocketEvent.CLIENT_MOVEMENT_STOP, this.localPlayer.getXY())
 	}
 
 	changeMap(portalData: PortalData) {
@@ -341,8 +332,6 @@ class Map extends Scene {
 	update() {
 		if (this.isPortalLoading) return
 		if (this.localPlayer) {
-			const { x: prevX, y: prevY } = this.localPlayer.getPrevXY()
-
 			if (this.keyLeft && this.keyRight) {
 				if (this.keyLeft.isDown) {
 					this.localPlayer.moveLeft()
@@ -361,19 +350,21 @@ class Map extends Scene {
 				}
 			}
 
-			const { isMoving } = this.localPlayer.getPlayerState()
+			const { isMoving, x } = this.localPlayer.getPlayerState()
+			const container = this.localPlayer.getContainer()
+			const containerBody = container.body as Phaser.Physics.Arcade.Body
 
 			if (isMoving) {
 				this.moveLocalPlayer()
-			} else {
-				this.stopLocalPlayer()
-			}
-
-			this.fallLocalPlayer()
-
-			const { x, y } = this.localPlayer.getXY()
-			if (x !== prevX || y !== prevY) {
 				this.sendMovement()
+			} else if (!isMoving && !containerBody.touching.down) {
+				this.localPlayer.setXY(container.x, container.y)
+				this.sendStop()
+			} else {
+				if (x !== this.localPlayer.getPrevXY().x) {
+					this.sendStop()
+				}
+				this.stopLocalPlayer()
 			}
 		}
 	}
