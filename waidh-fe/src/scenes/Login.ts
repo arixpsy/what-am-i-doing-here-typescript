@@ -13,8 +13,6 @@ import { LoginInfo, PlayerInfo } from '../@types'
 import io, { Socket } from 'socket.io-client'
 import { SocketEvent } from '../utils/socket'
 import { z } from 'zod'
-import Cookies from 'js-cookie'
-import { SettingKey } from '../utils/key'
 import { initVolume } from '../utils/functions/volume'
 
 class Login extends Phaser.Scene {
