@@ -1,0 +1,10 @@
+{
+  "name": "what-am-i-doing-here",
+  "version": "1.0.0",
+  "description": "Typescript refactor of my first phaser game",
+  "author": "Arix Phua",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon --config waidh-be/dist/nodemon.prod.json waidh-be/dist/index.js"
+  }
+}
