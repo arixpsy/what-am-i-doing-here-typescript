@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon --config nodemon.dev.json src/index.ts",
     "build": "npx tsc",
-    "serve": "nodemon --config nodemon.prod.json dist/index.js"
+    "start": "nodemon --config nodemon.prod.json dist/index.js"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
