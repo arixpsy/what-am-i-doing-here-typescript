@@ -6,9 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon --config nodemon.dev.json src/index.ts",
-    "build-win": "npx tsc && copy nodemon.prod.json dist",
-    "build-mac": "npx tsc && cp nodemon.prod.json dist",
-    "serve": "nodemon --config dist/nodemon.prod.json dist/index.js"
+    "build": "npx tsc",
+    "serve": "nodemon --config nodemon.prod.json dist/index.js"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",

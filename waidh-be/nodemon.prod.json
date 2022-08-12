@@ -1,0 +1,8 @@
+{
+	"restartable": "rs",
+	"watch": ["./"],
+	"env": {
+		"ENV": "prod"
+	},
+	"ext": "js,json"
+}
