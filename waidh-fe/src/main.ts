@@ -30,7 +30,7 @@ const game = new Phaser.Game(config)
 
 game.registry.set(
 	'socket',
-	io(import.meta.env.SOCKET_URL || 'http://localhost:3000', {
+	io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000', {
 		withCredentials: true,
 		autoConnect: false,
 		transports: ['websocket'],
