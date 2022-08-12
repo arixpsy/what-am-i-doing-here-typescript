@@ -36,7 +36,7 @@ class Map extends Scene {
 	}
 
 	async create() {
-		this.cameras.main.fadeIn(750, 0, 0, 0)
+		this.cameras.main.fadeOut(0, 0, 0, 0)
 		this.createMap()
 		this.addSound()
 		this.addKeyboard()
@@ -169,6 +169,7 @@ class Map extends Scene {
 			this.players[data.uid] = localPlayer
 			this.setupCamera(localPlayer)
 			this.localPlayer = localPlayer
+			this.cameras.main.fadeIn(750, 0, 0, 0)
 
 			io.emit(
 				SocketEvent.REQUEST_ALL_PLAYERS,
@@ -195,8 +196,13 @@ class Map extends Scene {
 
 		io.on(SocketEvent.PLAYER_MOVE, (playerMovement: PlayerInfoWithXY) => {
 			if (!playerMovement.x || !playerMovement.y) return
+
 			const player = this.players[playerMovement.uid]
+			if (!player) return
+
 			const sprite = player.getSprite()
+			if (!sprite) return
+			
 			const spriteInfo = SpriteData[player.getSpriteType()]
 			const { x: prevX } = player.getPrevXY()
 
@@ -219,8 +225,13 @@ class Map extends Scene {
 
 		io.on(SocketEvent.PLAYER_STOP, (playerMovement: PlayerInfoWithXY) => {
 			if (!playerMovement.x || !playerMovement.y) return
+			
 			const player = this.players[playerMovement.uid]
+			if (!player) return
+
 			const sprite = player.getSprite()
+			if (!sprite) return
+
 			const spriteInfo = SpriteData[player.getSpriteType()]
 
 			sprite.play(spriteInfo.idle.key, true)
