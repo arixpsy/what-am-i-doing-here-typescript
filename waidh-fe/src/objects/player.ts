@@ -60,7 +60,6 @@ class Player {
 			.add(nameLabel)
 
 		if (isLocalPlayer) {
-			scene.registry.set('localPlayerUid', player.uid)
 			scene.physics.world.enable(this.container)
 			if (
 				sceneGround &&
