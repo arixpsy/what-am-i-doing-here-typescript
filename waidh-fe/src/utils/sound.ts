@@ -1,5 +1,5 @@
 import { SoundKey } from './key'
-import titleAudio from './../assets/sounds/title.mp3'
+import titleAudio from './../assets/sounds/Title.mp3'
 import cavaBienAudio from './../assets/sounds/CavaBien.mp3'
 import myPrinceMyKingdomAudio from './../assets/sounds/MyPrinceMyKingdom.mp3'
 
