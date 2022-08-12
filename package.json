@@ -5,6 +5,6 @@
   "author": "Arix Phua",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon --config waidh-be/dist/nodemon.prod.json waidh-be/dist/index.js"
+    "start": "nodemon --config waidh-be/nodemon.prod.json waidh-be/dist/index.js"
   }
 }
