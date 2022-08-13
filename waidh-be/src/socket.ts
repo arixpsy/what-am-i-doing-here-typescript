@@ -29,11 +29,11 @@ const socket = (io: Server) => {
 			channel: 1,
 			map: MapKey.FOREST,
 		}
-		const roomId = `${playerInfo.map}-${playerInfo.channel}`
-		socket.join(roomId)
+
+		socket.join(getRoomId(playerInfo.map, playerInfo.channel))
 
 		console.log(`🟢 A user connected: ${playerInfo.displayName}`)
-		console.log(`🟢 A user join room: ${roomId}`)
+		console.log(`🟢 A user join room: ${getRoomId(playerInfo.map, playerInfo.channel)}`)
 
 		io.to(socket.id).emit(SocketEvent.LOGIN_SUCCESS, playerInfo)
 
@@ -43,17 +43,19 @@ const socket = (io: Server) => {
 				console.log(
 					`🟢 A user join map(${playerInfo.map}): ${playerInfo.displayName}`
 				)
+				const newRoomId = getRoomId(playerInfo.map, playerInfo.channel)
 				const newPlayer = gameStorage.addPlayerToRoom(playerInfo)
-				socket.broadcast.to(roomId).emit(SocketEvent.PLAYER_CONNECT, newPlayer)
+				socket.broadcast.to(newRoomId).emit(SocketEvent.PLAYER_CONNECT, newPlayer)
 				callback(playerInfo)
 			}
 		)
 
 		socket.on(SocketEvent.DISCONNECT, function () {
 			console.log(`⛔ A user disconnected: ${playerInfo.displayName}`)
+			const newRoomId = getRoomId(playerInfo.map, playerInfo.channel)
 			const removedPlayer = gameStorage.removePlayer(playerInfo)
 			socket.broadcast
-				.to(roomId)
+				.to(newRoomId)
 				.emit(SocketEvent.PLAYER_DISCONNECT, removedPlayer)
 		})
 
@@ -69,6 +71,7 @@ const socket = (io: Server) => {
 		socket.on(
 			SocketEvent.CLIENT_MOVEMENT,
 			({ x, y }: Pick<IPlayerInfoWithXY, 'uid' | 'x' | 'y'>) => {
+				const roomId = getRoomId(playerInfo.map, playerInfo.channel)
 				playerInfo.x = x
 				playerInfo.y = y
 				gameStorage.updatePlayerLocation(playerInfo)
@@ -79,6 +82,7 @@ const socket = (io: Server) => {
 		socket.on(
 			SocketEvent.CLIENT_MOVEMENT_STOP,
 			({ x, y }: Pick<IPlayerInfoWithXY, 'uid' | 'x' | 'y'>) => {
+				const roomId = getRoomId(playerInfo.map, playerInfo.channel)
 				playerInfo.x = x
 				playerInfo.y = y
 				gameStorage.updatePlayerLocation(playerInfo)
