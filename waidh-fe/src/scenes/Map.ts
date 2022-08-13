@@ -156,6 +156,8 @@ class Map extends Scene {
 					x < portalRightBound
 				) {
 					this.isPortalLoading = true
+					this.canPortal = false
+
 					this.stopLocalPlayer()
 					this.changeMap(portal.data)
 					return
