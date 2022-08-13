@@ -26,6 +26,7 @@ class Map extends Scene {
 	private keySpace?: Phaser.Input.Keyboard.Key
 	private keyUp?: Phaser.Input.Keyboard.Key
 	private isPortalLoading: boolean = false
+	private canPortal: boolean = false
 
 	constructor(key: MapKey) {
 		super(key)
@@ -46,6 +47,7 @@ class Map extends Scene {
 		// TODO: addsocialui
 		// TODO: add chat ui
 		// TODO: add message function
+		setTimeout(() => (this.canPortal = true), 1000)
 	}
 
 	// GETTERS
@@ -139,6 +141,7 @@ class Map extends Scene {
 		this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
 		this.keyUp.on('down', () => {
 			if (!this.localPlayer) return
+			if (!this.canPortal) return
 			const container = this.localPlayer.getContainer()
 			const containerBody = container.body as Phaser.Physics.Arcade.Body
 			const { x, y } = containerBody
@@ -202,7 +205,7 @@ class Map extends Scene {
 
 			const sprite = player.getSprite()
 			if (!sprite) return
-			
+
 			const spriteInfo = SpriteData[player.getSpriteType()]
 			const { x: prevX } = player.getPrevXY()
 
@@ -225,7 +228,7 @@ class Map extends Scene {
 
 		io.on(SocketEvent.PLAYER_STOP, (playerMovement: PlayerInfoWithXY) => {
 			if (!playerMovement.x || !playerMovement.y) return
-			
+
 			const player = this.players[playerMovement.uid]
 			if (!player) return
 
