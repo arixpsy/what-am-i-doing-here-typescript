@@ -47,7 +47,10 @@ class Map extends Scene {
 		// TODO: addsocialui
 		// TODO: add chat ui
 		// TODO: add message function
-		setTimeout(() => (this.canPortal = true), 1000)
+		setTimeout(() => {
+			this.canPortal = true
+			this.isPortalLoading = false
+		}, 1000)
 	}
 
 	// GETTERS
@@ -61,6 +64,7 @@ class Map extends Scene {
 
 	// CREATE FUNCTIONS
 	createMap() {
+		console.log(this.physics)
 		const map = MapData[this.map]
 		const {
 			platform: { ground: mapGround, others: mapPlatforms },
@@ -115,13 +119,20 @@ class Map extends Scene {
 		const soundManager = this.sound as Phaser.Sound.HTML5AudioSoundManager
 		initVolume(soundManager)
 
-		soundManager.add(SoundKey.JUMP)
-		soundManager.add(SoundKey.PORTAL)
+		if (!soundManager.get(SoundKey.JUMP)) {
+			soundManager.add(SoundKey.JUMP)
+		}
 
-		this.bgm = soundManager.add(SoundData[MapData[this.map].sound].key, {
-			loop: true,
-		})
-		this.bgm.play()
+		if (!soundManager.get(SoundKey.PORTAL)) {
+			soundManager.add(SoundKey.PORTAL)
+		}
+
+		if (!soundManager.get(SoundData[MapData[this.map].sound].key)) {
+			this.bgm = soundManager.add(SoundData[MapData[this.map].sound].key, {
+				loop: true,
+			})
+		}
+		this.bgm?.play()
 	}
 
 	addKeyboard() {
@@ -336,11 +347,9 @@ class Map extends Scene {
 			soundManager.play(SoundKey.PORTAL)
 			this.cameras.main.fadeOut(750, 0, 0, 0)
 			this.cameras.main.once('camerafadeoutcomplete', () => {
-				this.scene.add(mapKey, MapData[mapKey].class)
+				this.unmount()
 				this.scene.start(mapKey)
-				this.bgm?.stop()
-				this.input.keyboard.removeAllKeys(true)
-				this.scene.remove()
+				this.scene.stop()
 			})
 		})
 	}
@@ -383,6 +392,19 @@ class Map extends Scene {
 				this.stopLocalPlayer()
 			}
 		}
+	}
+
+	unmount() {
+		const io: Socket = this.registry.get('socket')
+		io.removeAllListeners(SocketEvent.PLAYER_CONNECT)
+		io.removeAllListeners(SocketEvent.PLAYER_DISCONNECT)
+		io.removeAllListeners(SocketEvent.PLAYER_MOVE)
+
+		this.bgm?.stop()
+		this.input.keyboard.removeAllKeys(true)
+		this.platforms = []
+		this.portals = []
+		this.players = {}
 	}
 }
 
